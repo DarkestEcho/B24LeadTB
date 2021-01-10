@@ -12,25 +12,13 @@ $teleBot = new TeleBot(BOT_TOKEN);
 
 $result = $teleBot->getWebhookUpdates();
 
-file_put_contents("data.txt", print_r($result, 1), 8);
-
 $text = array_key_exists("message", $result)?
     $result["message"]["text"] : $result["callback_query"]["data"];
 
 $chat_id = array_key_exists("message", $result)?
     $result["message"]["chat"]["id"] : $result["callback_query"]["from"]["id"];
 
-//$teleBot->sendMessage($chat_id, $text);
-//$user_id = $result["message"]["from"]["id"];
-//$name = $result["message"]["from"]["username"];
 
-//$text = "\start";
-//$chat_id = "1022217576";
-
-/*
- * Если это первое обращение пользователя
- */
-/*if(!file_exists("users/$chat_id.json")){*/
 if($text == "/start"){
     $teleBot->sendMessage(
         $chat_id,
@@ -58,11 +46,10 @@ else if(!file_exists("users/$chat_id.json")){
         "Для создания новой заявки введите команду: /start"
     );
 }
-//}
 else if (file_exists("users/$chat_id.json")){
     $json_data = file_get_contents("users/$chat_id.json");
     $user_data = json_decode($json_data, true);
-    //$teleBot->sendMessage($chat_id, "Этап: ".$user_data['step']);  //нужно для отладки
+
     /*
      * Получение и обработка данных о ФИО пользователя
      */
@@ -156,7 +143,6 @@ else if (file_exists("users/$chat_id.json")){
      * Проверка правильности ввода пользователем
      */
     else if($user_data['step'] == 'data_verification'){
-        //$teleBot->sendMessage($chat_id, $text);
         if($text == "Нет"){
             $inline_keyboard = new InlineKeyboardMarkup();
             $inline_keyboard->addButton('ФИО');
@@ -170,7 +156,6 @@ else if (file_exists("users/$chat_id.json")){
         }
         // отправляю в битрикс
         else if($text == "Да"){
-
             $bx24 = new BX24(B24_WEBHOOK);
 
             $res = $bx24->crm_lead_add(
@@ -298,8 +283,6 @@ else if (file_exists("users/$chat_id.json")){
             unlink("users/$chat_id.json");
         }
     }
-
-    file_put_contents("user_data.txt", print_r($user_data, 1), 8);
 }
 
 function data_verification($user_data,$teleBot){
